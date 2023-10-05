@@ -1,0 +1,89 @@
+﻿@inject IClientService service
+@inject NavigationManager navigationMgr
+
+<SfAppBar style=" background-image: linear-gradient(to right, #947FFF, #F875B3);">
+    <table>
+        <tr>
+            <td>
+                <h4>N</h4>
+            </td>
+            <td>etcode Job Portal</td>
+        </tr>
+    </table>
+    <AppBarSpacer></AppBarSpacer>
+    <input type="search" class="form-control w-25 float-end text-primary rounded-5" @bind="SearchKey" placeholder="Search for Job here..." style="visibility:@SearchBarVisibility; margin-right:0.3rem;" />
+    <div class="card text-center float-end" id="searchIconDiv" style="margin-right:3rem;">
+        <button class="btn btn-none border-0" id="btnSearch" @onclick="SearchIconClicked">
+            <i class="oi oi-magnifying-glass text-center" style="color:#F875B3; margin-left:-0.4rem;"></i>
+        </button>
+    </div>
+    <AuthorizeView>
+        <Authorized>
+            <span style="margin-right:1rem;">Hello, @context.User!.Identity!.Name</span>
+            <SfButton CssClass="e-inherit" Content="Post Job" OnClick="HandlePostJob"></SfButton>
+            <SfButton CssClass="e-inherit" Content="Logout" OnClick="Logout"></SfButton>
+        </Authorized>
+        <NotAuthorized>
+            <span style="margin-right:1rem;">Hello, Guest</span>
+            <SfButton CssClass="e-inherit" Content="Login" OnClick="Login"></SfButton>
+            <SfButton CssClass="e-inherit" Content="Register" OnClick="Register"></SfButton>
+        </NotAuthorized>
+    </AuthorizeView>
+</SfAppBar>
+<style>
+    #searchIconDiv {
+        border-radius: 50px;
+        width: 30px;
+        height: 30px;
+    }
+
+    #btnSearch {
+        border-radius: 50px;
+        width: 30px;
+        height: 30px;
+    }
+</style>
+
+@code {
+    private string SearchKey { get; set; } = string.Empty;
+
+    private static string SearchBarVisibility = "hidden";
+    private void SearchIconClicked()
+    {
+        if (SearchBarVisibility == "hidden")
+        {
+            SearchBarVisibility = "visible";
+            return;
+        }
+
+        if (!string.IsNullOrEmpty(SearchKey) || !string.IsNullOrWhiteSpace(SearchKey))
+        {
+            navigationMgr.NavigateTo($"search/{SearchKey}");
+        }
+
+    }
+
+
+
+    private void Register()
+    {
+        navigationMgr.NavigateTo("registration");
+    }
+    private void Login()
+    {
+        navigationMgr.NavigateTo("login");
+    }
+
+    private async void Logout()
+    {
+        await service.LogoutAsync();
+        navigationMgr.NavigateTo("/");
+    }
+
+    private void HandlePostJob()
+    {
+        navigationMgr.NavigateTo("post-job");
+    }
+
+
+}

@@ -1,0 +1,121 @@
+﻿@page "/post-job"
+@attribute [Authorize(Roles = "Admin, User")]
+@using Syncfusion.Blazor.DropDowns
+@inject IJSRuntime js
+@inject IClientService service
+
+<PageTitle>Post Job</PageTitle>
+<div class="card mt-2 border-1 shadow-lg">
+    <div class="card border-1 shadow-lg" style=" background-image: linear-gradient(to right, #947FFF, #F875B3);">
+        <div class="card border-1 shadow-lg" style=" background-image: linear-gradient(to right, #947FFF, #F875B3);">
+            <div class="card mt-1 border-1 shadow-lg" style=" background-image: linear-gradient(to right, #947FFF, #F875B3);">
+                <div class="card border-1 shadow-lg">
+                    <div class="card border-1 shadow-lg">
+                        <div class="card-header"><h4>Post Job</h4></div>
+                        <div class="card-body">
+                            <EditForm Model="PostJobModel" OnValidSubmit="HandleSaveOperation">
+                                <DataAnnotationsValidator />
+                                <ValidationSummary />
+                                <div class="row">
+                                    <div class="col-xl-6 col-md-6 col-sm-12">
+                                        <div class="card  border-1 shadow-lg">
+                                            <div class="card-header bg-white"> <h5>Provide Job Information</h5></div>
+                                            <div class="card-body">
+                                                <div class="form-group">
+                                                    <SfTextBox Enabled="true" Placeholder="Job Title" FloatLabelType="FloatLabelType.Auto" ValidateOnInput="true" @bind-Value="PostJobModel.Title" Type="InputType.Text" ShowClearButton="true"></SfTextBox>
+                                                    <ValidationMessage For="()=>PostJobModel.Title" />
+                                                </div>
+                                                <div class="form-group">
+                                                    <SfTextBox Enabled="true" Placeholder="Job Function" FloatLabelType="FloatLabelType.Auto" @bind-Value="PostJobModel.Function" ValidateOnInput="true" Type="InputType.Text" ShowClearButton="true"></SfTextBox>
+                                                    <ValidationMessage For="()=>PostJobModel.Function" />
+                                                </div>
+                                                <div class="form-group">
+                                                    <SfTextBox Enabled="true" Placeholder="Job Description" Multiline="true" FloatLabelType="FloatLabelType.Auto" @bind-Value="PostJobModel.Description" ValidateOnInput="true" Type="InputType.Text" ShowClearButton="true"></SfTextBox>
+                                                    <ValidationMessage For="()=>PostJobModel.Description" />
+                                                </div>
+                                                <div class="form-group mt-3">
+                                                    <SfDropDownList TValue="string" TItem="JobMode" Placeholder="Select Job Type" DataSource="@JobeTypes">
+                                                        <DropDownListFieldSettings Value="Name" Text="Name"></DropDownListFieldSettings>
+                                                        <DropDownListEvents TValue="string" TItem="JobMode" ValueChange="OnValueChange"></DropDownListEvents>
+                                                    </SfDropDownList>
+                                                    <ValidationMessage For="()=>PostJobModel.JobMode" />
+                                                </div>
+                                                <div class="form-group">
+                                                    <SfTextBox Enabled="true" Placeholder="Job Location (Optional)" Multiline="true" FloatLabelType="FloatLabelType.Auto" title="Specify location if not the same as the company location" @bind-Value="PostJobModel.JobLocation" ValidateOnInput="true" Type="InputType.Text" ShowClearButton="true"></SfTextBox>
+                                                    <ValidationMessage For="()=>PostJobModel.JobLocation" />
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                    </div>
+                                    <div class="col-xl-6 col-md-6 col-sm-12">
+                                        <div class="card shadow border-1">
+                                            <div class="card-header bg-white text-primary fs-6">Provide Salary Range, it can be left for confidential</div>
+                                            <div class="card-body">
+                                                <div class="form-group">
+                                                    <SfNumericTextBox Enabled="true" Placeholder="Minimum Salary Amount" Format="C2" FloatLabelType="FloatLabelType.Auto" @bind-Value="PostJobModel.MinSalaryRange" ValidateDecimalOnType="true" ValidateOnInput="true" ShowClearButton="true" ShowSpinButton="true"></SfNumericTextBox>
+                                                    <ValidationMessage For="()=>PostJobModel.MinSalaryRange" />
+                                                </div>
+                                                <div class="form-group">
+                                                    <SfNumericTextBox Enabled="true" Placeholder="Maximum Salary Amount" Format="C2" FloatLabelType="FloatLabelType.Auto" @bind-Value="PostJobModel.MaxSalaryRange" ValidateDecimalOnType="true" ValidateOnInput="true" ShowClearButton="true" ShowSpinButton="true"></SfNumericTextBox>
+                                                    <ValidationMessage For="()=>PostJobModel.MaxSalaryRange" />
+                                                </div>
+                                                <div class="form-group mt-3">
+                                                    <button class="btn btn-success float-end">Post Job</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </EditForm>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+@code {
+
+    [CascadingParameter] private Task<AuthenticationState> authenticationState { get; set; }
+    private PostJob PostJobModel { get; set; } = new();
+    private List<JobMode> JobeTypes { get; set; } = new();
+
+    protected override Task OnInitializedAsync()
+    {
+        JobeTypes.Add(new() { Id = 1, Name = "Part Time" });
+        JobeTypes.Add(new() { Id = 2, Name = "Full Time" });
+        return base.OnInitializedAsync();
+    }
+
+
+    private async Task HandleSaveOperation()
+    {
+        var authState = await authenticationState;
+        if (authState!.User!.Identity!.IsAuthenticated)
+        {
+            PostJobModel.CompanyEmail = authState.User.Identity.Name;
+            var (flag, message) = await service.PostJobAsync(PostJobModel);
+            if (!flag)
+            {
+                await js.InvokeVoidAsync("alert", message);
+                return;
+            }
+
+            await js.InvokeVoidAsync("alert", message);
+            PostJobModel = new PostJob();
+
+        }
+
+
+
+
+    }
+
+    public void OnValueChange(ChangeEventArgs<string, JobMode> args)
+    {
+        PostJobModel.JobMode = args.Value;
+    }
+}

@@ -1,0 +1,24 @@
+﻿@using BlazorServerJobPortal.Pages
+@inherits LayoutComponentBase
+<PageTitle>Netcode Job Portal</PageTitle>
+
+<div class="page">
+    <main>
+        <AppBarComponent></AppBarComponent>
+        <div class="row">
+            <div class="col-xl-2 col-md-3 col-sm-12 mt-2">
+                <NavMenu></NavMenu>
+            </div>
+            <div class="col-xl-8 col-md-9 col-sm-12 ">
+                @Body
+            </div>
+            <div class="col-xl-2 col-md-3 col-sm-12 mt-2">
+              <FeaturedJobComponent></FeaturedJobComponent>
+            </div>
+            <div class="col-md-12 col-xl-12 col-sm-12">
+                <FooterComponent></FooterComponent>
+            </div>
+        </div>
+
+    </main>
+</div>

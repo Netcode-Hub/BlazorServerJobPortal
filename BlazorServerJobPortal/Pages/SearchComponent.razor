@@ -1,0 +1,163 @@
+﻿@page "/search/{filter}"
+@inject IClientService service
+@inject IJSRuntime js
+@inject NavigationManager NavigateMgr
+
+<div class="card border-1 shadow-lg mt-2" style=" background-image: linear-gradient(to right, #947FFF, #F875B3);">
+    <div class="card  border-1 shadow-lg" style=" background-image: linear-gradient(to right, #947FFF, #F875B3);">
+        <div class="card border-1 shadow-lg" style=" background-image: linear-gradient(to right, #947FFF, #F875B3);">
+            <div class="card border-1 shadow mt-1">
+                <div class="card border-1 shadow-lg">
+                    @if (AllJobs != null)
+                    {
+                        foreach (var job in AllJobs)
+                        {
+                            <div class="card border-1 m-3 p-3">
+                                <div class="card-header">
+                                    <h5>@job.Title</h5>
+                                </div>
+                                <div class="card-body" style="background:#eee">
+                                    <span>@job.CompanyName</span>
+                                    <div>
+                                        <span class="badge p-2 bg-primary m-1">@job.CompanyLocation</span>
+                                        <span class="badge bg-warning text-dark p-2 m-1">@job.JobMode</span>
+                                        @if (Decimal.ToInt32(job.MinSalaryRange) > 0 || Decimal.ToInt32(job.MaxSalaryRange) > 0)
+                                        {
+                                            string range = "$ " + job.MinSalaryRange + " - " + job.MaxSalaryRange;
+                                            <span class="badge bg-info p-2 m-1">@range</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-danger m-1 p-2">$ Confidential</span>
+                                        }
+                                    </div>
+                                    <div class="vstack gap-2 mt-2">
+                                        <h6>Job Function: @job.Function</h6>
+                                        <h6>Job Location: @(job.JobLocation ?? job.CompanyLocation)</h6>
+
+                                    </div>
+                                    <table>
+                                        <tr>
+                                            <td>
+                                                <div class="card text-center" style="width:100px;">
+                                                    <div class="card-body">
+                                                        <img alt="Image" src="/files/companylogos/@job.CompanyLogo" class="text-center" style="width:70px; height:60px;" />
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td> <h6 style="margin-left:1rem;">@job.Description</h6></td>
+                                        </tr>
+                                    </table>
+
+
+
+                                    <hr />
+                                    <div style="height:1rem">
+                                        @if (job.DateAdded.AddMonths(1).Date > DateTime.Now.Date)
+                                        {
+                                            <span class="badge bg-success p-2">New</span>
+
+                                        }
+                                        <span class="float-end">
+                                            @{
+                                                string displayDays = string.Empty;
+                                                DateTime startDate = job.DateAdded.Date;
+                                                DateTime endDate = DateTime.Now.Date;
+
+                                                TimeSpan timeSpan = endDate.Subtract(startDate);
+
+                                                int days = timeSpan.Days;
+                                                int weeks = days / 7;
+                                                int months = (endDate.Year - startDate.Year) * 12 + endDate.Month - startDate.Month;
+                                                int years = endDate.Year - startDate.Year;
+
+                                                @if (years > 0)
+                                                {
+                                                    displayDays = years + " years ago";
+                                                }
+                                                else if (months > 0)
+                                                {
+                                                    displayDays = months + " months ago";
+                                                }
+                                                else if (weeks > 0)
+                                                {
+                                                    displayDays = weeks + " weeks ago";
+                                                }
+                                                else if (days > 1)
+                                                {
+                                                    displayDays = days + " days ago";
+                                                }
+                                                else if (days > 0)
+                                                {
+                                                    displayDays = "Yesterday";
+                                                }
+                                                else if ((int)(DateTime.Now - job.DateAdded).Days == 0)
+                                                {
+                                                    displayDays = "Today";
+                                                }
+                                            }
+                                            @displayDays
+                                        </span>
+                                    </div>
+                                    <hr />
+                                    <div class="card-footer">
+                                        <h6>Company Address: @job.CompanyAddress</h6>
+                                        <h6>Company Contact: @job.CompanyEmail</h6>
+                                    </div>
+
+                                    @if (job.Featured)
+                                    {
+                                        <div id="featuredContainer" class="text-light text-center bg-primary fw-bold float-end text-center card shadow border-1" style=" background-image: linear-gradient(to right, #947FFF, #F875B3);">
+                                            <div class="card border-1 shadow-lg mt-2" style=" background-image: linear-gradient(to right, #947FFF, #F875B3);">
+                                                <div class="card  border-1 shadow-lg" style=" background-image: linear-gradient(to right, #947FFF, #F875B3);">
+                                                    <div class="card border-1 shadow-lg" style=" background-image: linear-gradient(to right, #947FFF, #F875B3);">
+                                                        <div class="card-body"> Featured</div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        }
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    #featuredContainer {
+        width: 120px;
+        height: 40px;
+        background: #32557f;
+        transform: rotate(40deg);
+        position: absolute;
+        top: 30px;
+        right: 0;
+    }
+
+</style>
+
+@code {
+    [Parameter] public string Filter { get; set; }
+    private List<GetJob> AllJobs { get; set; } = new();
+    protected async override Task OnParametersSetAsync()
+    {
+        if (string.IsNullOrEmpty(Filter))
+            NavigateMgr.NavigateTo("/");
+
+        var jobs = await service.GetAllJobsAsync(Filter);
+        AllJobs?.Clear();
+        if (jobs != null)
+        {
+            foreach (var item in jobs)
+                AllJobs.Add(item);
+        }
+
+        Filter = string.Empty;
+    }
+
+
+}

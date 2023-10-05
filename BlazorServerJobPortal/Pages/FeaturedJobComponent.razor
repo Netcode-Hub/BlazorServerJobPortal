@@ -1,0 +1,47 @@
+﻿@using Syncfusion.Blazor.Navigations
+@inject IClientService service
+
+<div class="card border-1 shadow-lg" style=" background-image: linear-gradient(to right, #947FFF, #F875B3);">
+    <div class="card border-1 shadow-lg" style=" background-image: linear-gradient(to right, #947FFF, #F875B3);">
+        <div class="card mt-1 border-1 shadow-lg" style=" background-image: linear-gradient(to right, #947FFF, #F875B3);">
+            <div class="card border-1 shadow-lg">
+                <div class="card border-1 shadow-lg">
+                    <div class="card-header text-white fw-bold fs-5" style=" background-image: linear-gradient(to right, #947FFF, #F875B3);">Featured Jobs </div>
+                    <SfAccordion ExpandMode="ExpandMode.Single">
+                        <AccordionItems>
+                            @if (AllJobs.Count != null)
+                            {
+                                foreach (var job in AllJobs.Where(_ => _.Featured).ToList())
+                                {
+                                    <AccordionItem CssClass="albert-class" Header="@job.Title">
+                                        <ContentTemplate>
+                                            <div class="vstack gap-2">
+                                                <span>@job.Description</span>
+                                                <a class="btn btn-link" href="search/@job.Title">Read More</a>
+                                            </div>
+                                        </ContentTemplate>
+                                    </AccordionItem>
+
+                                }
+                            }
+
+                        </AccordionItems>
+                    </SfAccordion>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private List<GetJob> AllJobs { get; set; } = new();
+    protected override async Task OnInitializedAsync()
+    {
+        var jobs = await service.GetAllJobsAsync(null!);
+        if (jobs != null)
+        {
+            foreach (var item in jobs)
+                AllJobs.Add(item);
+        }
+    }
+}

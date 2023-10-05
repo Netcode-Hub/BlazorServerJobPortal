@@ -1,0 +1,147 @@
+﻿@page "/registration"
+@inject IJSRuntime js
+@inject IClientService service
+@inject NavigationManager navigateMgr
+
+<PageTitle>Registration</PageTitle>
+<div class="card mt-2 border-1 shadow-lg">
+    <div class="card border-1 shadow-lg" style=" background-image: linear-gradient(to right, #947FFF, #F875B3);">
+        <div class="card border-1 shadow-lg" style=" background-image: linear-gradient(to right, #947FFF, #F875B3);">
+            <div class="card mt-1 border-1 shadow-lg" style=" background-image: linear-gradient(to right, #947FFF, #F875B3);">
+                <div class="card border-1 shadow-lg">
+                    <div class="card border-1 shadow-lg">
+                        <div class="card-header"><h4>Create An Account</h4></div>
+                        <div class="card-body">
+                            <EditForm Model="RegistrationModel" OnValidSubmit="HandleSaveOperation">
+                                <DataAnnotationsValidator />
+                                <ValidationSummary />
+                                <div class="row">
+                                    <div class="col-xl-6 col-md-6 col-sm-12">
+                                        <div class="card  border-1 shadow-lg">
+                                            <div class="card-header bg-white"> <h5>Personal Information</h5></div>
+                                            <div class="card-body">
+                                                <div class="form-group">
+                                                    <SfTextBox Enabled="true" Placeholder="Company Owner's Fullname" FloatLabelType="FloatLabelType.Auto" ValidateOnInput="true" @bind-Value="RegistrationModel.Name" Type="InputType.Text" ShowClearButton="true"></SfTextBox>
+                                                    <ValidationMessage For="()=>RegistrationModel.Name" />
+                                                </div>
+                                                <div class="form-group">
+                                                    <SfNumericTextBox Enabled="true" Placeholder="Company Owner's Phone" FloatLabelType="FloatLabelType.Auto" @bind-Value="RegistrationModel.Phone" ValidateDecimalOnType="true" ValidateOnInput="true" ShowClearButton="true" ShowSpinButton="true"></SfNumericTextBox>
+                                                    <ValidationMessage For="()=>RegistrationModel.Phone" />
+                                                </div>
+                                                <div class="form-group">
+                                                    <SfTextBox Enabled="true" Placeholder="Company Owner's Email Address" FloatLabelType="FloatLabelType.Auto" @bind-Value="RegistrationModel.Email" ValidateOnInput="true" Type="InputType.Email" ShowClearButton="true"></SfTextBox>
+                                                    <ValidationMessage For="()=>RegistrationModel.Email" />
+                                                </div>
+                                                <div class="form-group">
+                                                    <SfTextBox Enabled="true" Placeholder="Password" FloatLabelType="FloatLabelType.Auto" @bind-Value="RegistrationModel.Password" ShowClearButton="true" ValidateOnInput="true" Type="InputType.Password"></SfTextBox>
+                                                    <ValidationMessage For="()=>RegistrationModel.Password" />
+                                                </div>
+                                                <div class="form-group">
+
+                                                    <SfTextBox Enabled="true" Placeholder="Confirm Password" Type="InputType.Password" FloatLabelType="FloatLabelType.Auto" @bind-Value="RegistrationModel.ConfirmPassword" ValidateOnInput="true" ShowClearButton="true"></SfTextBox>
+                                                    <ValidationMessage For="()=>RegistrationModel.Password" />
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                    </div>
+                                    <div class="col-xl-6 col-md-6 col-sm-12">
+                                        <div class="card  border-1 shadow-lg">
+                                            <div class="card-header bg-white"><h5>Company Information</h5></div>
+                                            <div class="card-body">
+                                                <div class="form-group">
+                                                    <SfTextBox Enabled="true" Placeholder="Company Name" FloatLabelType="FloatLabelType.Auto" @bind-Value="RegistrationModel.CompanyName" Type="InputType.Text" ValidateOnInput="true" ShowClearButton="true"></SfTextBox>
+                                                    <ValidationMessage For="()=>RegistrationModel.CompanyName" />
+                                                </div>
+                                                <div class="form-group">
+                                                    <SfTextBox Enabled="true" Placeholder="Company Address" Multiline="true" FloatLabelType="FloatLabelType.Auto" @bind-Value="RegistrationModel.CompanyAddress" ValidateOnInput="true" Type="InputType.Text" ShowClearButton="true"></SfTextBox>
+                                                    <ValidationMessage For="()=>RegistrationModel.CompanyAddress" />
+                                                </div>
+                                                <div class="form-group">
+                                                    <SfTextBox Enabled="true" Placeholder="Company Location" Multiline="true" FloatLabelType="FloatLabelType.Auto" @bind-Value="RegistrationModel.CompanyLocation" ValidateOnInput="true" Type="InputType.Text" ShowClearButton="true"></SfTextBox>
+                                                    <ValidationMessage For="()=>RegistrationModel.CompanyLocation" />
+                                                </div>
+                                                <div class="form-group mt-2">
+                                                    <label class="form-label">Upload Company Certificate (pdf format)</label>
+                                                    <SfUploader AutoUpload="false" AllowedExtensions=".pdf, .PDF">
+                                                        <UploaderEvents ValueChange="OnCertificateChange"></UploaderEvents>
+                                                    </SfUploader>
+                                                    <ValidationMessage For="()=>RegistrationModel.CompanyLogo" />
+                                                </div>
+                                                <div class="form-group mt-2">
+                                                    <label class="form-label">Upload Company Logo</label>
+                                                    <SfUploader AutoUpload="false" AllowedExtensions=".png, .PNG, .jpg, .JPG, .jpg, .JPEG">
+                                                        <UploaderEvents ValueChange="OnLogoChange"></UploaderEvents>
+                                                    </SfUploader>
+                                                    <ValidationMessage For="()=>RegistrationModel.CompanyCertificateName" />
+                                                </div>
+                                                <div class="form-group mt-3">
+                                                    <button type="submit" class="btn btn-primary float-end">Create An Account</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </EditForm>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@code {
+    private RegistrationModel RegistrationModel { get; set; } = new();
+    private async Task OnCertificateChange(UploadChangeEventArgs args)
+    {
+        Guid CertificateId = Guid.NewGuid();
+        string createFileName = string.Empty;
+
+        foreach (var file in args.Files)
+        {
+            createFileName = CertificateId + "_" + file.FileInfo.Name;
+            var path = @"WWWroot/Files/CompanyCertificates/" + createFileName;
+            FileStream filestream = new FileStream(path, FileMode.Create, FileAccess.Write);
+            await file.File.OpenReadStream(long.MaxValue).CopyToAsync(filestream);
+            filestream.Close();
+        }
+        RegistrationModel.CompanyCertificateName = createFileName;
+    }
+
+    private async Task OnLogoChange(UploadChangeEventArgs args)
+    {
+        Guid LogoId = Guid.NewGuid();
+        string createLogoName = string.Empty;
+        foreach (var file in args.Files)
+        {
+            createLogoName = LogoId + "_" + file.FileInfo.Name;
+            var path = @"WWWroot/Files/CompanyLogos/" + createLogoName;
+            FileStream filestream = new FileStream(path, FileMode.Create, FileAccess.Write);
+            await file.File.OpenReadStream(long.MaxValue).CopyToAsync(filestream);
+            filestream.Close(); ;
+        }
+        RegistrationModel.CompanyLogo = createLogoName;
+    }
+
+    private async Task HandleSaveOperation()
+    {
+        if (string.IsNullOrEmpty(RegistrationModel.CompanyCertificateName) || string.IsNullOrEmpty(RegistrationModel.CompanyLogo))
+        {
+            await js.InvokeVoidAsync("alert", "Please provide Company Certificate or Company Logo");
+            return;
+        }
+
+        var (flag, message) = await service.RegisterUserAsync(RegistrationModel);
+        await js.InvokeVoidAsync("alert", message);
+        RegistrationModel = new RegistrationModel();
+        navigateMgr.NavigateTo("login");
+    }
+
+    [CascadingParameter] private Task<AuthenticationState> authenticationState { get; set; }
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await authenticationState;
+        if (authState!.User!.Identity!.IsAuthenticated)
+            navigateMgr.NavigateTo("/");
+    }
+}
